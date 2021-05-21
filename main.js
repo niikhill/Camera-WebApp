@@ -3,6 +3,7 @@ let constraints = {
     audio: true
 };
 let recordBtn = document.querySelector("#recorder")
+let clickBtn = document.querySelector("#clickbtn")
 let vidElement = document.querySelector("#video-player");
 let mediaRecorder;
 let recordState = false;
@@ -28,6 +29,7 @@ let buffer = [];
             a.download = "file.mp4"
             a.href = url;
             a.click();
+            buffer = [];
         })
     } catch (err) {
         console.log(err);
@@ -49,7 +51,25 @@ recordBtn.addEventListener("click", () => {
         recordBtn.innerHTML = "Record"
         recordState = false;
     }
+});
+
+clickBtn.addEventListener("click", (e) => {
+    //create canvas element 
+    let canvas = document.createElement("canvas");
+    canvas.width = vidElement.videoWidth;
+    canvas.height = vidElement.videoHeight;
+    let tool = canvas.getContext("2d");
+    tool.drawImage(vidElement,0,0);
+    let url = canvas.toDataURL();
+    let a = document.createElement("a");
+    a.download = "file.png"
+    a.href = url;
+    a.click();
+
 })
+
+
+
 
 
 
