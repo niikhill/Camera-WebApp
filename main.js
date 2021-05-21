@@ -10,6 +10,7 @@ let recordState = false;
 let buffer = [];
 
 
+
 (async () => {
     try {
         let mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -26,7 +27,8 @@ let buffer = [];
             });
             const url = window.URL.createObjectURL(blob);
             let a = document.createElement("a");
-            a.download = "file.mp4"
+            let file_name = getFormattedTime();
+            a.download = `niikhill.com_${file_name}.mp4`
             a.href = url;
             a.click();
             buffer = [];
@@ -62,7 +64,8 @@ clickBtn.addEventListener("click", (e) => {
     tool.drawImage(vidElement,0,0);
     let url = canvas.toDataURL();
     let a = document.createElement("a");
-    a.download = "file.png"
+    let file_name = getFormattedTime();
+    a.download = `niikhill.com_${file_name}.png`
     a.href = url;
     a.click();
 
@@ -70,7 +73,17 @@ clickBtn.addEventListener("click", (e) => {
 
 
 
-
+function getFormattedTime() {
+    let today = new Date();
+    let y = today.getFullYear();
+    // JavaScript months are 0-based.
+    let m = today.getMonth() + 1;
+    let d = today.getDate();
+    let h = today.getHours();
+    let mi = today.getMinutes();
+    let s = today.getSeconds();
+    return y + "-" + m + "-" + d + "-" + h + "-" + mi + "-" + s;
+}
 
 
 
