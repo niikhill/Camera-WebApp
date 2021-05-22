@@ -2,13 +2,14 @@ let constraints = {
     video: true,
     audio: true
 };
+let timerEl = document.querySelector(".timing");
 let recordBtn = document.querySelector("#recorder")
 let clickBtn = document.querySelector("#clickbtn")
 let vidElement = document.querySelector("#video-player");
 let mediaRecorder;
 let recordState = false;
 let buffer = [];
-
+let clearObj = {};
 
 
 (async () => {
@@ -46,28 +47,39 @@ recordBtn.addEventListener("click", () => {
     }
     if (recordState == false) {
         mediaRecorder.start();
-        recordBtn.innerHTML = "Recording...."
         recordState = true;
+        recordBtn.classList.remove("notRec");
+        recordBtn.classList.add("rec");
+        startCounting();
+        // timerEl.classList.add("timing-active");
     } else {
         mediaRecorder.stop();
-        recordBtn.innerHTML = "Record"
         recordState = false;
+        recordBtn.classList.remove("rec");
+        recordBtn.classList.add("notRec")
+        stopCounting();
+        // timerEl.classList.remove("timing-active")
     }
 });
 
 clickBtn.addEventListener("click", (e) => {
     //create canvas element 
+
     let canvas = document.createElement("canvas");
     canvas.width = vidElement.videoWidth;
     canvas.height = vidElement.videoHeight;
     let tool = canvas.getContext("2d");
-    tool.drawImage(vidElement,0,0);
+    tool.drawImage(vidElement, 0, 0);
+    clickBtn.classList.add("singlePulse");
     let url = canvas.toDataURL();
     let a = document.createElement("a");
     let file_name = getFormattedTime();
     a.download = `niikhill.com_${file_name}.png`
     a.href = url;
     a.click();
+    setTimeout(() => {
+        clickBtn.classList.remove("singlePulse");
+    }, 1000)
 
 })
 
@@ -86,7 +98,23 @@ function getFormattedTime() {
 }
 
 
+function startCounting() {
+    timerEl.classList.add("timing-active")
+    let timeCount = 0;
+    clearObj = setInterval(() => {
+        let seconds = (timeCount % 60) < 10 ? `0${timeCount%60}` : `${timeCount%60}`
+        let minutes = (timeCount / 60) < 10 ? `0${Number.parseInt(timeCount/60)}` : `${Number.parseInt(timeCount/60)}`
+        let hours = (timeCount / 3600) < 10 ? `0${Number.parseInt(timeCount/3600)}` : `${Number.parseInt(timeCount/3600)}`
+        timerEl.innerText = `${hours}:${minutes}:${seconds}`;
+        timeCount++;
+    }, 1000)
+}
 
+function stopCounting() {
+    timerEl.classList.remove("timing-active")
+    timerEl.innerText = "00:00:00";
+    clearInterval(clearObj);
+}
 
 
 
