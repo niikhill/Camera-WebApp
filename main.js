@@ -18,6 +18,13 @@ let clearObj = {};
 let currentFilter = "";
 let zoomLevel = 1;
 
+
+
+window.onload = function () {
+    vidElement.muted = "muted";
+};
+
+
 (async () => {
     try {
         let mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
