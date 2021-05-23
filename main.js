@@ -2,21 +2,30 @@ let constraints = {
     video: true,
     audio: true
 };
+let allFilter = document.querySelectorAll(".filter");
 let timerEl = document.querySelector(".timing");
 let recordBtn = document.querySelector("#recorder")
 let clickBtn = document.querySelector("#clickbtn")
 let vidElement = document.querySelector("#video-player");
+let video_container = document.querySelector(".video_container")
+let uiFilter = document.querySelector(".ui-filter")
+let zoomIn = document.getElementById("plus-container");
+let zoomOut = document.getElementById("minus-container");
 let mediaRecorder;
 let recordState = false;
 let buffer = [];
 let clearObj = {};
-
+let currentFilter = "";
+let zoomLevel = 1;
 
 (async () => {
     try {
         let mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
         vidElement.srcObject = mediaStream;
-        mediaRecorder = await new MediaRecorder(mediaStream);
+        let options = {
+            mimeType: "video/webm; codecs=vp9"
+        };
+        mediaRecorder = await new MediaRecorder(mediaStream, options);
 
         mediaRecorder.addEventListener("dataavailable", (e) => {
             buffer.push(e.data);
@@ -24,14 +33,17 @@ let clearObj = {};
         mediaRecorder.addEventListener("stop", (e) => {
             //mine type
             let blob = new Blob(buffer, {
-                type: "video/mp4"
+                type: "video/webm"
             });
-            const url = window.URL.createObjectURL(blob);
-            let a = document.createElement("a");
-            let file_name = getFormattedTime();
-            a.download = `niikhill.com_${file_name}.mp4`
-            a.href = url;
-            a.click();
+            // let duration = Date.now() - startTime;
+            // let fixedBlob = ysFixWebmDuration(blob, duration)
+            // const url = window.URL.createObjectURL(blob);
+            // let a = document.createElement("a");
+            // let file_name = getFormattedTime();
+            // a.download = `niikhill.com_${file_name}.mkv`
+            // a.href = url;
+            // a.click();
+            addMediaToDb(blob,"video");
             buffer = [];
         })
     } catch (err) {
@@ -66,21 +78,68 @@ clickBtn.addEventListener("click", (e) => {
     //create canvas element 
 
     let canvas = document.createElement("canvas");
+    let tool = canvas.getContext("2d");
     canvas.width = vidElement.videoWidth;
     canvas.height = vidElement.videoHeight;
-    let tool = canvas.getContext("2d");
-    tool.drawImage(vidElement, 0, 0);
-    clickBtn.classList.add("singlePulse");
+    tool.scale(zoomLevel, zoomLevel);
+    let x = (canvas.width / zoomLevel - canvas.width) / 2;
+    let y = (canvas.height / zoomLevel - canvas.height) / 2
+    if (currentFilter) {
+        tool.fillStyle = currentFilter;
+        tool.fillRect(0, 0, canvas.width, canvas.height);
+    }
+    tool.drawImage(vidElement, x, y); 
     let url = canvas.toDataURL();
-    let a = document.createElement("a");
-    let file_name = getFormattedTime();
-    a.download = `niikhill.com_${file_name}.png`
-    a.href = url;
-    a.click();
+    addMediaToDb(url,"images");
+    clickBtn.classList.add("singlePulse");
+    // let a = document.createElement("a");
+    // let file_name = getFormattedTime();
+    // a.download = `niikhill.com_${file_name}.png`
+    // a.href = url;
+    // a.click();
+    // a.remove();
+    // canvas.remove();
     setTimeout(() => {
         clickBtn.classList.remove("singlePulse");
     }, 1000)
 
+})
+
+
+
+//allFilter
+
+for (let i = 0; i < allFilter.length; i++) {
+    allFilter[i].addEventListener("click", (e) => {
+        //Add filter to UI
+        let color = allFilter[i].style.backgroundColor
+        if (color) {
+            uiFilter.classList.add("ui-filter-active");
+            uiFilter.style.backgroundColor = color;
+            currentFilter = color;
+        } else {
+            uiFilter.classList.remove("ui-filter-active");
+            uiFilter.style.backgroundColor = "";
+            currentFilter = "";
+        }
+    })
+}
+
+
+
+//zoom 
+
+zoomIn.addEventListener("click", (e) => {
+    if (zoomLevel < 3) {
+        zoomLevel += 0.2;
+        vidElement.style.transform = `scale(${zoomLevel}) scaleX(-1)`;
+    }
+})
+zoomOut.addEventListener("click", () => {
+    if (zoomLevel > 1) {
+        zoomLevel -= 0.2;
+        vidElement.style.transform = `scale(${zoomLevel}) scaleX(-1)`;
+    }
 })
 
 
