@@ -18,12 +18,9 @@ let clearObj = {};
 let currentFilter = "";
 let zoomLevel = 1;
 
-
-
 window.onload = function () {
     vidElement.muted = "muted";
 };
-
 
 (async () => {
     try {
