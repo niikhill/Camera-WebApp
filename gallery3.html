@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>gallery</title>
+</head>
+
+<body>
+    <div class="gallery">
+
+    </div>
+    <script>
+        let request = indexedDB.open("camera", 1);
+        let db;
+        let galleryElement = document.querySelector(".gallery");
+        let imgC = document.querySelectorAll(".img-c");
+
+
+        request.onsuccess = (e) => {
+            db = request.result;
+            viewMedia();
+            viewVideo()
+        }
+
+        request.onerror = (err) => {
+            console.log(err);
+        }
+        request.onupgradeneeded = (e) => {
+            db = request.result;
+            db.createObjectStore("images", {
+                keyPath: "mid"
+            });
+            db.createObjectStore("video", {
+                keyPath: "mid"
+            });
+            viewMedia();
+            viewVideo();
+        }
+
+        function viewMedia() {
+            if (db) {
+                let tx = db.transaction("images", "readonly");
+                let notesStore = tx.objectStore("images");
+                let pendingAns = notesStore.openCursor();
+                pendingAns.addEventListener("success", () => {
+                    let cursor = pendingAns.result;
+                    if (cursor) {
+                        let link = cursor.value.media;
+                        let img = document.createElement("img");
+                        img.src = link;
+                        img.style.height = 200 + "px";
+                        document.body.appendChild(img);
+                        cursor.continue();
+                        
+                    }
+                })
+            } else {
+                alert("Db does not exist");
+            }
+        }
+
+
+        function viewVideo() {
+            if (db) {
+                let tx = db.transaction("video", "readonly");
+                let notesStore = tx.objectStore("video");
+                let pendingAns = notesStore.openCursor();
+                pendingAns.addEventListener("success", () => {
+                    let cursor = pendingAns.result;
+                    if (cursor) {
+                        let link = cursor.value.media;
+                        let url = window.URL.createObjectURL(link)
+                        let img = document.createElement("video");
+                        img.controls = true;
+                        img.src = url;
+                        img.style.height = 200 + "px";
+                        document.body.appendChild(img);
+                        cursor.continue();
+                       
+                    }
+                })
+            } else {
+                alert("Db does not exist");
+            }
+        }
+    </script>
+</body>
+
+</html>

@@ -86,7 +86,7 @@
         request.onsuccess = (e) => {
             db = request.result;
             viewMedia();
-            // viewVideo()
+            viewVideo()
         }
 
         request.onerror = (err) => {
@@ -101,7 +101,7 @@
                 keyPath: "mid"
             });
             viewMedia();
-            // viewVideo();
+            viewVideo();
         }
 
         function viewMedia() {
@@ -137,10 +137,13 @@
                     let cursor = pendingAns.result;
                     if (cursor) {
                         let link = cursor.value.media;
-                        let img = document.createElement("video");
-                        img.srcObject = link;
-                        img.style.height = 200 + "px";
-                        document.body.appendChild(img);
+                        let url = window.URL.createObjectURL(link)
+                        let divContent = document.createElement("div");
+                        divContent.classList.add("img-c");
+                        let src =
+                            `<div class='img-w' style = "background-image:url(${link})"><video controls src="${url}"></div>`
+                        divContent.innerHTML = src;
+                        galleryElement.appendChild(divContent);
                         cursor.continue();
                     }
                 })
@@ -148,7 +151,6 @@
                 alert("Db does not exist");
             }
         }
-
 
 
         // $(function () {
