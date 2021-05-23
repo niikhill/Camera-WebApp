@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>gallery</title>
+    <style>
+        body {
+            padding: 30px 0;
+            position: relative;
+            background-color: black;
+        }
+
+        .gallery {
+            width: 600px;
+            margin: auto;
+            border-radius: 3px;
+            overflow: hidden;
+            /* position: relative; */
+        }
+
+        .img-c {
+            width: 200px;
+            height: 200px;
+            float: left;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .img-w {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-size: cover;
+            background-position: center;
+            cursor: pointer;
+            transition: transform ease-in-out 300ms;
+        }
+
+        .img-w img {
+            display: none;
+        }
+
+        .img-c {
+            transition: width ease 400ms, height ease 350ms, left cubic-bezier(0.4, 0, 0.2, 1) 420ms, top cubic-bezier(0.4, 0, 0.2, 1) 420ms;
+        }
+
+        .img-c:hover .img-w {
+            transform: scale(1.08);
+            transition: transform cubic-bezier(0.4, 0, 0.2, 1) 450ms;
+        }
+
+        .img-c.active {
+            width: 100% !important;
+            height: 100% !important;
+            position: absolute;
+            z-index: 2;
+            /* transform: translateX(-50%); */
+        }
+
+        .img-c.postactive {
+            position: absolute;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        .img-c.active.positioned {
+            left: 0 !important;
+            top: 0 !important;
+            transition-delay: 50ms;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="gallery"></div>
+    <script>
+        let request = indexedDB.open("camera", 1);
+        let db;
+        let galleryElement = document.querySelector(".gallery");
+        let imgC = document.querySelectorAll(".img-c");
+
+
+        request.onsuccess = (e) => {
+            db = request.result;
+            viewMedia();
+            // viewVideo()
+        }
+
+        request.onerror = (err) => {
+            console.log(err);
+        }
+        request.onupgradeneeded = (e) => {
+            db = request.result;
+            db.createObjectStore("images", {
+                keyPath: "mid"
+            });
+            db.createObjectStore("video", {
+                keyPath: "mid"
+            });
+            viewMedia();
+            // viewVideo();
+        }
+
+        function viewMedia() {
+            if (db) {
+                let tx = db.transaction("images", "readonly");
+                let notesStore = tx.objectStore("images");
+                let pendingAns = notesStore.openCursor();
+                pendingAns.addEventListener("success", () => {
+                    let cursor = pendingAns.result;
+                    if (cursor) {
+                        let link = cursor.value.media;
+                        let divContent = document.createElement("div");
+                        divContent.classList.add("img-c");
+                        let src =
+                            `<div class='img-w' style = "background-image:url(${link})"><img src="${link}" alt=""></div>`
+                        divContent.innerHTML = src;
+                        galleryElement.appendChild(divContent);
+                        cursor.continue();
+                    }
+                })
+            } else {
+                alert("Db does not exist");
+            }
+        }
+
+
+        function viewVideo() {
+            if (db) {
+                let tx = db.transaction("video", "readonly");
+                let notesStore = tx.objectStore("video");
+                let pendingAns = notesStore.openCursor();
+                pendingAns.addEventListener("success", () => {
+                    let cursor = pendingAns.result;
+                    if (cursor) {
+                        let link = cursor.value.media;
+                        let img = document.createElement("video");
+                        img.srcObject = link;
+                        img.style.height = 200 + "px";
+                        document.body.appendChild(img);
+                        cursor.continue();
+                    }
+                })
+            } else {
+                alert("Db does not exist");
+            }
+        }
+
+
+
+        // $(function () {
+        //     $(".img-c").click(function () {
+        //         let w = $(this).outerWidth()
+        //         let h = $(this).outerHeight()
+        //         let x = $(this).offset().left
+        //         let y = $(this).offset().top
+
+
+        //         $(".active").not($(this)).remove()
+        //         let copy = $(this).clone();
+        //         copy.insertAfter($(this)).height(h).width(w).delay(500).addClass("active")
+        //         $(".active").css('top', y - 8);
+        //         $(".active").css('left', x - 8);
+
+        //         setTimeout(function () {
+        //             copy.addClass("positioned")
+        //         }, 0)
+
+        //     })
+        // })
+
+        // $(document).on("click", ".img-c.active", function () {
+        //     let copy = $(this)
+        //     copy.removeClass("positioned active").addClass("postactive")
+        //     setTimeout(function () {
+        //         copy.remove();
+        //     }, 500)
+        // })
+    </script>
+</body>
+
+</html>
